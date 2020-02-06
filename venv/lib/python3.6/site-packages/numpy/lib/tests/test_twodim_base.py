@@ -278,7 +278,7 @@ class TestHistogram2d(object):
 
     @requires_array_function
     def test_dispatch(self):
-        class ShouldDispatch:
+        class ShouldDispatch(object):
             def __array_function__(self, function, types, args, kwargs):
                 return types, args, kwargs
 

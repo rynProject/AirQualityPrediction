@@ -9,7 +9,6 @@ by importing from the extension module.
 import functools
 import sys
 import warnings
-import sys
 
 from . import overrides
 from . import _multiarray_umath
@@ -75,9 +74,9 @@ array_function_from_c_func_and_dispatcher = functools.partial(
 
 
 @array_function_from_c_func_and_dispatcher(_multiarray_umath.empty_like)
-def empty_like(prototype, dtype=None, order=None, subok=None, shape=None):
+def empty_like(prototype, dtype=None, order=None, subok=None):
     """
-    empty_like(prototype, dtype=None, order='K', subok=True, shape=None)
+    empty_like(prototype, dtype=None, order='K', subok=True)
 
     Return a new array with the same shape and type as a given array.
 
@@ -101,12 +100,6 @@ def empty_like(prototype, dtype=None, order=None, subok=None, shape=None):
         If True, then the newly created array will use the sub-class
         type of 'a', otherwise it will be a base-class array. Defaults
         to True.
-    shape : int or sequence of ints, optional.
-        Overrides the shape of the result. If order='K' and the number of
-        dimensions is unchanged, will try to keep order, otherwise,
-        order='C' is implied.
-
-        .. versionadded:: 1.17.0
 
     Returns
     -------
@@ -131,11 +124,11 @@ def empty_like(prototype, dtype=None, order=None, subok=None, shape=None):
     --------
     >>> a = ([1,2,3], [4,5,6])                         # a is array-like
     >>> np.empty_like(a)
-    array([[-1073741821, -1073741821,           3],    # uninitialized
+    array([[-1073741821, -1073741821,           3],    #random
            [          0,           0, -1073741821]])
     >>> a = np.array([[1., 2., 3.],[4.,5.,6.]])
     >>> np.empty_like(a)
-    array([[ -2.00000715e+000,   1.48219694e-323,  -2.00000572e+000], # uninitialized
+    array([[ -2.00000715e+000,   1.48219694e-323,  -2.00000572e+000],#random
            [  4.38791518e-305,  -2.00000715e+000,   4.17269252e-309]])
 
     """
@@ -302,8 +295,8 @@ def inner(a, b):
     An example where `b` is a scalar:
 
     >>> np.inner(np.eye(2), 7)
-    array([[7., 0.],
-           [0., 7.]])
+    array([[ 7.,  0.],
+           [ 0.,  7.]])
 
     """
     return (a, b)
@@ -437,8 +430,8 @@ def lexsort(keys, axis=None):
     >>> a = [1,5,1,4,3,4,4] # First column
     >>> b = [9,4,0,4,0,2,1] # Second column
     >>> ind = np.lexsort((b,a)) # Sort by a, then by b
-    >>> ind
-    array([2, 0, 4, 6, 5, 3, 1])
+    >>> print(ind)
+    [2 0 4 6 5 3 1]
 
     >>> [(a[i],b[i]) for i in ind]
     [(1, 0), (1, 9), (3, 0), (4, 1), (4, 2), (4, 4), (5, 4)]
@@ -1121,9 +1114,9 @@ def putmask(a, mask, values):
 
 
 @array_function_from_c_func_and_dispatcher(_multiarray_umath.packbits)
-def packbits(a, axis=None, bitorder='big'):
+def packbits(myarray, axis=None):
     """
-    packbits(a, axis=None, bitorder='big')
+    packbits(myarray, axis=None)
 
     Packs the elements of a binary-valued array into bits in a uint8 array.
 
@@ -1131,19 +1124,12 @@ def packbits(a, axis=None, bitorder='big'):
 
     Parameters
     ----------
-    a : array_like
+    myarray : array_like
         An array of integers or booleans whose elements should be packed to
         bits.
     axis : int, optional
         The dimension over which bit-packing is done.
         ``None`` implies packing the flattened array.
-    bitorder : {'big', 'little'}, optional
-        The order of the input bits. 'big' will mimic bin(val),
-        ``[0, 0, 0, 0, 0, 0, 1, 1] => 3 = 0b00000011 => ``, 'little' will
-        reverse the order so ``[1, 1, 0, 0, 0, 0, 0, 0] => 3``.
-        Defaults to 'big'.
-
-        .. versionadded:: 1.17.0
 
     Returns
     -------
@@ -1166,56 +1152,34 @@ def packbits(a, axis=None, bitorder='big'):
     ...                [0,0,1]]])
     >>> b = np.packbits(a, axis=-1)
     >>> b
-    array([[[160],
-            [ 64]],
-           [[192],
-            [ 32]]], dtype=uint8)
+    array([[[160],[64]],[[192],[32]]], dtype=uint8)
 
     Note that in binary 160 = 1010 0000, 64 = 0100 0000, 192 = 1100 0000,
     and 32 = 0010 0000.
 
     """
-    return (a,)
+    return (myarray,)
 
 
 @array_function_from_c_func_and_dispatcher(_multiarray_umath.unpackbits)
-def unpackbits(a, axis=None, count=None, bitorder='big'):
+def unpackbits(myarray, axis=None):
     """
-    unpackbits(a, axis=None, count=None, bitorder='big')
+    unpackbits(myarray, axis=None)
 
     Unpacks elements of a uint8 array into a binary-valued output array.
 
-    Each element of `a` represents a bit-field that should be unpacked
-    into a binary-valued output array. The shape of the output array is
-    either 1-D (if `axis` is ``None``) or the same shape as the input
-    array with unpacking done along the axis specified.
+    Each element of `myarray` represents a bit-field that should be unpacked
+    into a binary-valued output array. The shape of the output array is either
+    1-D (if `axis` is None) or the same shape as the input array with unpacking
+    done along the axis specified.
 
     Parameters
     ----------
-    a : ndarray, uint8 type
+    myarray : ndarray, uint8 type
        Input array.
     axis : int, optional
         The dimension over which bit-unpacking is done.
         ``None`` implies unpacking the flattened array.
-    count : int or None, optional
-        The number of elements to unpack along `axis`, provided as a way
-        of undoing the effect of packing a size that is not a multiple
-        of eight. A non-negative number means to only unpack `count`
-        bits. A negative number means to trim off that many bits from
-        the end. ``None`` means to unpack the entire array (the
-        default). Counts larger than the available number of bits will
-        add zero padding to the output. Negative counts must not
-        exceed the available number of bits.
-
-        .. versionadded:: 1.17.0
-
-    bitorder : {'big', 'little'}, optional
-        The order of the returned bits. 'big' will mimic bin(val),
-        ``3 = 0b00000011 => [0, 0, 0, 0, 0, 0, 1, 1]``, 'little' will reverse
-        the order to ``[1, 1, 0, 0, 0, 0, 0, 0]``.
-        Defaults to 'big'.
-
-        .. versionadded:: 1.17.0
 
     Returns
     -------
@@ -1224,8 +1188,8 @@ def unpackbits(a, axis=None, count=None, bitorder='big'):
 
     See Also
     --------
-    packbits : Packs the elements of a binary-valued array into bits in
-               a uint8 array.
+    packbits : Packs the elements of a binary-valued array into bits in a uint8
+               array.
 
     Examples
     --------
@@ -1239,27 +1203,9 @@ def unpackbits(a, axis=None, count=None, bitorder='big'):
     array([[0, 0, 0, 0, 0, 0, 1, 0],
            [0, 0, 0, 0, 0, 1, 1, 1],
            [0, 0, 0, 1, 0, 1, 1, 1]], dtype=uint8)
-    >>> c = np.unpackbits(a, axis=1, count=-3)
-    >>> c
-    array([[0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0],
-           [0, 0, 0, 1, 0]], dtype=uint8)
-
-    >>> p = np.packbits(b, axis=0)
-    >>> np.unpackbits(p, axis=0)
-    array([[0, 0, 0, 0, 0, 0, 1, 0],
-           [0, 0, 0, 0, 0, 1, 1, 1],
-           [0, 0, 0, 1, 0, 1, 1, 1],
-           [0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0]], dtype=uint8)
-    >>> np.array_equal(b, np.unpackbits(p, axis=0, count=b.shape[0]))
-    True
 
     """
-    return (a,)
+    return (myarray,)
 
 
 @array_function_from_c_func_and_dispatcher(_multiarray_umath.shares_memory)
@@ -1396,7 +1342,7 @@ def is_busday(dates, weekmask=None, holidays=None, busdaycal=None, out=None):
     >>> # The weekdays are Friday, Saturday, and Monday
     ... np.is_busday(['2011-07-01', '2011-07-02', '2011-07-18'],
     ...                 holidays=['2011-07-01', '2011-07-04', '2011-07-17'])
-    array([False, False,  True])
+    array([False, False,  True], dtype='bool')
     """
     return (dates, weekmask, holidays, out)
 
@@ -1470,27 +1416,27 @@ def busday_offset(dates, offsets, roll=None, weekmask=None, holidays=None,
     --------
     >>> # First business day in October 2011 (not accounting for holidays)
     ... np.busday_offset('2011-10', 0, roll='forward')
-    numpy.datetime64('2011-10-03')
+    numpy.datetime64('2011-10-03','D')
     >>> # Last business day in February 2012 (not accounting for holidays)
     ... np.busday_offset('2012-03', -1, roll='forward')
-    numpy.datetime64('2012-02-29')
+    numpy.datetime64('2012-02-29','D')
     >>> # Third Wednesday in January 2011
     ... np.busday_offset('2011-01', 2, roll='forward', weekmask='Wed')
-    numpy.datetime64('2011-01-19')
+    numpy.datetime64('2011-01-19','D')
     >>> # 2012 Mother's Day in Canada and the U.S.
     ... np.busday_offset('2012-05', 1, roll='forward', weekmask='Sun')
-    numpy.datetime64('2012-05-13')
+    numpy.datetime64('2012-05-13','D')
 
     >>> # First business day on or after a date
     ... np.busday_offset('2011-03-20', 0, roll='forward')
-    numpy.datetime64('2011-03-21')
+    numpy.datetime64('2011-03-21','D')
     >>> np.busday_offset('2011-03-22', 0, roll='forward')
-    numpy.datetime64('2011-03-22')
+    numpy.datetime64('2011-03-22','D')
     >>> # First business day after a date
     ... np.busday_offset('2011-03-20', 1, roll='backward')
-    numpy.datetime64('2011-03-21')
+    numpy.datetime64('2011-03-21','D')
     >>> np.busday_offset('2011-03-22', 1, roll='backward')
-    numpy.datetime64('2011-03-23')
+    numpy.datetime64('2011-03-23','D')
     """
     return (dates, offsets, weekmask, holidays, out)
 
@@ -1554,7 +1500,7 @@ def busday_count(begindates, enddates, weekmask=None, holidays=None,
     ... np.busday_count('2011-01', '2011-02')
     21
     >>> # Number of weekdays in 2011
-    >>> np.busday_count('2011', '2012')
+    ...  np.busday_count('2011', '2012')
     260
     >>> # Number of Saturdays in 2011
     ... np.busday_count('2011', '2012', weekmask='Sat')
@@ -1592,7 +1538,6 @@ def datetime_as_string(arr, unit=None, timezone=None, casting=None):
 
     Examples
     --------
-    >>> import pytz
     >>> d = np.arange('2002-10-27T04:30', 4*60, 60, dtype='M8[m]')
     >>> d
     array(['2002-10-27T04:30', '2002-10-27T05:30', '2002-10-27T06:30',
@@ -1623,8 +1568,6 @@ def datetime_as_string(arr, unit=None, timezone=None, casting=None):
     'casting' can be used to specify whether precision can be changed
 
     >>> np.datetime_as_string(d, unit='h', casting='safe')
-    Traceback (most recent call last):
-        ...
     TypeError: Cannot create a datetime string as units 'h' from a NumPy
     datetime with units 'm' according to the rule 'safe'
     """
