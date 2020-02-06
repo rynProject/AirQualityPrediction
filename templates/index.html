@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html >
+<!--From https://codepen.io/frytyler/pen/EGdtg-->
+<head>
+  <meta charset="UTF-8">
+  <title>Air Quality Prediction</title>
+  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  
+</head>
+
+<body>
+
+ <div class="login" >
+	<h1>Predict Air Quality Analysis</h1>
+
+     <!-- Main Input For Receiving Query to our ML -->
+    <form action="{{ url_for('predict')}}"method="post">
+        <input type="text" name="Time" placeholder="Time" required="required" />
+		<input type="text" name="CO(GT)" placeholder="CO(GT)" required="required" />
+        <input type="text" name="PT08.S1(CO)" placeholder="PT08.S1(CO)" required="required" />
+        <input type="text" name="NMHC(GT)" placeholder="NMHC(GT)" required="required" />
+        <input type="text" name="C6H6(GT)" placeholder="C6H6(GT)" required="required" />
+        <input type="text" name="PT08.S2(NMHC)" placeholder="PT08.S2(NMHC)" required="required" />
+        <input type="text" name="NOx(GT)" placeholder="NOx(GT)" required="required" />
+        <input type="text" name="PT08.S3(NOx)" placeholder="PT08.S3(NOx)" required="required" />
+        <input type="text" name="NO2(GT)" placeholder="NO2(GT)" required="required" />
+        <input type="text" name="PT08.S4(NO2)" placeholder="PT08.S4(NO2)" required="required" />
+        <input type="text" name="PT08.S5(O3)" placeholder="PT08.S5(O3)" required="required" />
+        <input type="text" name="T" placeholder="T" required="required" />
+        <input type="text" name="AH" placeholder="AH" required="required" />
+
+        <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
+    </form>
+
+   <br>
+   <br>
+   {{ prediction_text }}
+
+ </div>
+
+
+</body>
+</html>
